@@ -1,4 +1,7 @@
 using Application.ConferenceRooms.Create;
+using Application.ConferenceRooms.Delete;
+using Application.ConferenceRooms.GetAll;
+using Application.ConferenceRooms.GetById;
 using Application.ConferenceRooms.Update;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Contracts.ConferenceRooms;
@@ -28,9 +31,38 @@ public class ConferenceRoomsController : ControllerBase
             command,
             cancellationToken);
 
-        return StatusCode(
-            StatusCodes.Status201Created,
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = result.Id },
             result);
+    }
+    
+    [HttpGet]
+    [ProducesResponseType<IReadOnlyCollection<GetConferenceRoomsResult>>(
+        StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<GetConferenceRoomsResult>>> GetAll(
+        [FromServices] GetConferenceRoomsHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(cancellationToken);
+
+        return Ok(result);
+    }
+    
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType<GetConferenceRoomByIdResult>(
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GetConferenceRoomByIdResult>> GetById(
+        Guid id,
+        [FromServices] GetConferenceRoomByIdHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(
+            id,
+            cancellationToken);
+
+        return Ok(result);
     }
     
     [HttpPut("{id:guid}")]
@@ -53,6 +85,22 @@ public class ConferenceRoomsController : ControllerBase
 
         await handler.HandleAsync(
             command,
+            cancellationToken);
+
+        return NoContent();
+    }
+    
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        [FromServices] DeleteConferenceRoomHandler handler,
+        CancellationToken cancellationToken)
+    {
+        await handler.HandleAsync(
+            id,
             cancellationToken);
 
         return NoContent();

@@ -35,6 +35,16 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
             cancellationToken);
     }
     
+    public async Task<IReadOnlyCollection<ConferenceRoom>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ConferenceRooms
+            .AsNoTracking()
+            .Include(room => room.Services)
+            .OrderBy(room => room.Name)
+            .ToListAsync(cancellationToken);
+    }
+    
     public Task<ConferenceRoom?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -44,5 +54,20 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
             .FirstOrDefaultAsync(
                 room => room.Id == id,
                 cancellationToken);
+    }
+    
+    public Task<bool> HasBookingsAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Bookings
+            .AnyAsync(
+                booking => booking.ConferenceRoomId == id,
+                cancellationToken);
+    }
+
+    public void Remove(ConferenceRoom conferenceRoom)
+    {
+        _dbContext.ConferenceRooms.Remove(conferenceRoom);
     }
 }

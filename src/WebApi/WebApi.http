@@ -1,6 +1,6 @@
 @WebApi_HostAddress = http://localhost:5000
-### сюди вставляти ідентифікатор конференц-зали після її створення
-@ConferenceRoomId = 00000000-0000-0000-0000-000000000000 
+### сюди вставляти ідентифікатор конференц-зали
+@ConferenceRoomId = 05f0f3cd-871c-4a14-9d23-ada0a44992fa
 
 ### Ping
 
@@ -21,6 +21,27 @@ Accept: application/json
   "hourlyRate": 2000,
   "serviceIds": []
 }
+
+###
+
+### Отримання всіх конференц-залів
+
+GET {{WebApi_HostAddress}}/api/conference-rooms
+Accept: application/json
+
+###
+
+### Отримання конференц-зали за ідентифікатором
+
+GET {{WebApi_HostAddress}}/api/conference-rooms/{{ConferenceRoomId}}
+Accept: application/json
+
+###
+
+### Отримання конференц-зали за ідентифікатором - не знайдено
+
+GET {{WebApi_HostAddress}}/api/conference-rooms/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+Accept: application/json
 
 ###
 
@@ -63,5 +84,17 @@ Content-Type: application/json
   "hourlyRate": -100,
   "serviceIds": []
 }
+
+###
+
+### Видалення конференц-зали
+
+DELETE {{WebApi_HostAddress}}/api/conference-rooms/{{ConferenceRoomId}}
+
+###
+
+### Видалення конференц-зали - не знайдено
+
+DELETE {{WebApi_HostAddress}}/api/conference-rooms/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 
 ###
