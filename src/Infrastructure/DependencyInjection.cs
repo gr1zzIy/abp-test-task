@@ -1,4 +1,6 @@
+using Application.Abstractions.Persistence;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,10 @@ public static class DependencyInjection
             options.UseSnakeCaseNamingConvention();
         });
 
+        services.AddScoped<IConferenceRoomRepository, ConferenceRoomRepository>();
+        services.AddScoped<IServiceRepository, ServiceRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
         return services;
     }
 }
