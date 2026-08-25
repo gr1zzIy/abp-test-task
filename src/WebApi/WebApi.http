@@ -1,6 +1,67 @@
-@WebApi_HostAddress = http://localhost:5098
+@WebApi_HostAddress = http://localhost:5000
+### сюди вставляти ідентифікатор конференц-зали після її створення
+@ConferenceRoomId = 00000000-0000-0000-0000-000000000000 
 
-GET {{WebApi_HostAddress}}/weatherforecast/
+### Ping
+
+GET {{WebApi_HostAddress}}/api/ping
 Accept: application/json
+
+###
+
+### Створення конференц-зали
+
+POST {{WebApi_HostAddress}}/api/conference-rooms
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Зал A",
+  "capacity": 50,
+  "hourlyRate": 2000,
+  "serviceIds": []
+}
+
+###
+
+### Оновлення конференц-зали
+
+PUT {{WebApi_HostAddress}}/api/conference-rooms/{{ConferenceRoomId}}
+Content-Type: application/json
+
+{
+  "name": "Зал A Premium",
+  "capacity": 70,
+  "hourlyRate": 2500,
+  "serviceIds": []
+}
+
+###
+
+### Оновлення конференц-зали - не знайдено
+
+PUT {{WebApi_HostAddress}}/api/conference-rooms/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+Content-Type: application/json
+
+{
+  "name": "Unknown room",
+  "capacity": 50,
+  "hourlyRate": 2000,
+  "serviceIds": []
+}
+
+###
+
+### Створення конференц-зали - помилка валідації
+
+POST {{WebApi_HostAddress}}/api/conference-rooms
+Content-Type: application/json
+
+{
+  "name": "",
+  "capacity": 0,
+  "hourlyRate": -100,
+  "serviceIds": []
+}
 
 ###

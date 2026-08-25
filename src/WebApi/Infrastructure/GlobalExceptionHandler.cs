@@ -24,6 +24,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         {
             ValidationException => StatusCodes.Status400BadRequest,
             BadRequestException => StatusCodes.Status400BadRequest,
+            NotFoundException => StatusCodes.Status404NotFound,
             ConflictException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
@@ -49,6 +50,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         return statusCode switch
         {
             StatusCodes.Status400BadRequest => "Bad request",
+            StatusCodes.Status404NotFound => "Not found",
             StatusCodes.Status409Conflict => "Conflict",
             _ => "Internal server error"
         };

@@ -15,11 +15,14 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
 
     public Task<bool> ExistsByNameAsync(
         string name,
+        Guid? excludeId = null,
         CancellationToken cancellationToken = default)
     {
         return _dbContext.ConferenceRooms
             .AnyAsync(
-                room => room.Name == name,
+                room =>
+                    room.Name == name &&
+                    (!excludeId.HasValue || room.Id != excludeId.Value),
                 cancellationToken);
     }
 
@@ -30,5 +33,16 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
         await _dbContext.ConferenceRooms.AddAsync(
             conferenceRoom,
             cancellationToken);
+    }
+    
+    public Task<ConferenceRoom?> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.ConferenceRooms
+            .Include(room => room.Services)
+            .FirstOrDefaultAsync(
+                room => room.Id == id,
+                cancellationToken);
     }
 }

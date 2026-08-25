@@ -1,4 +1,5 @@
 using Application.ConferenceRooms.Create;
+using Application.ConferenceRooms.Update;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddScoped<CreateConferenceRoomHandler>();
-
+        services.AddScoped<UpdateConferenceRoomHandler>();
+        
         return services;
     }
 }
