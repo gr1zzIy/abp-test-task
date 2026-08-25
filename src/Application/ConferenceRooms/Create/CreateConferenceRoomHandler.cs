@@ -5,6 +5,11 @@ using FluentValidation;
 
 namespace Application.ConferenceRooms.Create;
 
+/// <summary>
+/// Реалізує сценарій створення нового конференц-залу.
+/// Перевіряє унікальність назви, наявність вибраних послуг
+/// та зберігає сформований зал.
+/// </summary>
 public sealed class CreateConferenceRoomHandler
 {
     private readonly IConferenceRoomRepository _conferenceRoomRepository;

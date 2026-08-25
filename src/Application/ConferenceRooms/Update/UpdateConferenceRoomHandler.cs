@@ -4,6 +4,10 @@ using FluentValidation;
 
 namespace Application.ConferenceRooms.Update;
 
+/// <summary>
+/// Реалізує сценарій редагування конференц-залу,
+/// включно із заміною набору доступних додаткових послуг.
+/// </summary>
 public sealed class UpdateConferenceRoomHandler
 {
     private readonly IConferenceRoomRepository _conferenceRoomRepository;
@@ -74,6 +78,8 @@ public sealed class UpdateConferenceRoomHandler
 
         conferenceRoom.Services.Clear();
 
+        // Вхідний список є повним новим набором доступних послуг,
+        // тому попередні зв'язки залу з послугами замінюються повністю.
         foreach (var service in services)
         {
             conferenceRoom.Services.Add(service);

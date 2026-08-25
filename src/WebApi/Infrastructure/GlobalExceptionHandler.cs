@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Infrastructure;
 
+/// <summary>
+/// Централізовано перетворює винятки застосунку
+/// на стандартизовані HTTP-відповіді у форматі Problem Details.
+/// </summary>
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly IProblemDetailsService _problemDetailsService;

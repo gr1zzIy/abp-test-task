@@ -1,16 +1,35 @@
 namespace Domain.Entities;
 
+/// <summary>
+/// Представляє бронювання конференц-залу на визначений часовий проміжок.
+/// </summary>
 public class Booking
 {
     public Guid Id { get; set; }
 
+    /// <summary>
+    /// Дата та час початку бронювання.
+    /// </summary>
     public DateTimeOffset StartTime { get; set; }
+
+    /// <summary>
+    /// Дата та час завершення бронювання.
+    /// </summary>
     public DateTimeOffset EndTime { get; set; }
 
+    /// <summary>
+    /// Остаточна вартість бронювання, зафіксована на момент його створення.
+    /// Зберігається окремо, щоб подальша зміна тарифів не впливала
+    /// на історичну вартість бронювання.
+    /// </summary>
     public decimal TotalPrice { get; set; }
 
     public Guid ConferenceRoomId { get; set; }
     public ConferenceRoom ConferenceRoom { get; set; } = null!;
 
-    public ICollection<Service> SelectedServices { get; set; } = new List<Service>();
+    /// <summary>
+    /// Додаткові послуги, обрані для бронювання.
+    /// </summary>
+    public ICollection<Service> SelectedServices { get; set; }
+        = new List<Service>();
 }

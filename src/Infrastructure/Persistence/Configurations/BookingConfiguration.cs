@@ -25,12 +25,16 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasOne(b => b.ConferenceRoom)
             .WithMany(cr => cr.Bookings)
             .HasForeignKey(b => b.ConferenceRoomId)
+            // Забороняємо каскадне видалення, щоб видалення залу
+            // не призводило до втрати історії бронювань.
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(b => b.SelectedServices)
             .WithMany(s => s.Bookings)
             .UsingEntity(j => j.ToTable("booking_services"));
 
+        // Індекс оптимізує пошук бронювань конкретного залу
+        // у заданому часовому проміжку.
         builder.HasIndex(b => new
         {
             b.ConferenceRoomId,
