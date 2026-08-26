@@ -5,7 +5,9 @@ using Application.ConferenceRooms.GetById;
 using Application.ConferenceRooms.SearchAvailable;
 using Application.ConferenceRooms.Update;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Contracts.ConferenceRooms;
+using WebApi.Infrastructure;
 
 namespace WebApi.Controllers;
 
@@ -14,6 +16,7 @@ namespace WebApi.Controllers;
 public class ConferenceRoomsController : ControllerBase
 {
     [HttpPost]
+    [EnableRateLimiting(RateLimitingPolicies.Write)]
     [ProducesResponseType<CreateConferenceRoomResult>(
         StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -67,6 +70,7 @@ public class ConferenceRoomsController : ControllerBase
     }
     
     [HttpPut("{id:guid}")]
+    [EnableRateLimiting(RateLimitingPolicies.Write)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -92,6 +96,7 @@ public class ConferenceRoomsController : ControllerBase
     }
     
     [HttpDelete("{id:guid}")]
+    [EnableRateLimiting(RateLimitingPolicies.Write)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

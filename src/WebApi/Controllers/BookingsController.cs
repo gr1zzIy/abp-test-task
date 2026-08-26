@@ -1,6 +1,8 @@
 ﻿using Application.Bookings.Create;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Contracts.Bookings;
+using WebApi.Infrastructure;
 
 namespace WebApi.Controllers;
 
@@ -13,6 +15,7 @@ public sealed class BookingsController : ControllerBase
 	/// розраховану загальну вартість оренди.
 	/// </summary>
 	[HttpPost]
+	[EnableRateLimiting(RateLimitingPolicies.Booking)]
 	[ProducesResponseType<CreateBookingResult>(
 	StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
