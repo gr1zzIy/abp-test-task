@@ -81,8 +81,7 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
                 .AsNoTracking()
                 .Include(room => room.Services)
                 .Where(room => room.Capacity >= capacity)
-                // Çàë º äîñòóïíèì, ÿêùî æîäíå ³ñíóþ÷å áðîíþâàííÿ
-                // íå ïåðåòèíàºòüñÿ ³ç çàïèòàíèì ÷àñîâèì ïðîì³æêîì.
+                // Ð¤Ñ–Ð»ÑŒÑ‚Ñ€ÑƒÑ”Ð¼Ð¾ ÐºÑ–Ð¼Ð½Ð°Ñ‚Ð¸, ÑÐºÑ– Ð½Ðµ Ð¼Ð°ÑŽÑ‚ÑŒ Ð±Ñ€Ð¾Ð½ÑŽÐ²Ð°Ð½ÑŒ Ñƒ Ð²ÐºÐ°Ð·Ð°Ð½Ð¾Ð¼Ñƒ Ð¿Ñ€Ð¾Ð¼Ñ–Ð¶ÐºÑƒ Ñ‡Ð°ÑÑƒ
                 .Where(room => !room.Bookings.Any(booking =>
                         booking.StartTime < endTime &&
                         booking.EndTime > startTime))
