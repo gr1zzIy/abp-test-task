@@ -28,4 +28,13 @@ internal sealed class ServiceRepository : IServiceRepository
             .Where(service => idCollection.Contains(service.Id))
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task<IReadOnlyCollection<Service>> GetAllAsync(
+            CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Services
+                .AsNoTracking()
+                .OrderBy(service => service.Name)
+                .ToListAsync(cancellationToken);
+    }
 }

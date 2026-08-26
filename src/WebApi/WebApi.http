@@ -141,3 +141,10 @@ Content-Type: application/json
 }
 
 ###
+
+### Отримання всіх послуг
+
+GET {{WebApi_HostAddress}}/api/services
+Accept: application/json
+
+###

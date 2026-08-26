@@ -7,4 +7,7 @@ public interface IServiceRepository
     Task<List<Service>> GetByIdsAsync(
         IEnumerable<int> ids,
         CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyCollection<Service>> GetAllAsync(
+		    CancellationToken cancellationToken = default);
 }

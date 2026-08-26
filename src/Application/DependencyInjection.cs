@@ -7,6 +7,7 @@ using Application.ConferenceRooms.GetById;
 using Application.ConferenceRooms.SearchAvailable;
 using Application.ConferenceRooms.Update;
 using Application.Pricing;
+using Application.Services.GetAll;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteConferenceRoomHandler>();
         services.AddScoped<SearchAvailableConferenceRoomsHandler>();
         services.AddScoped<CreateBookingHandler>();
+        services.AddScoped<GetServicesHandler>();
         
         return services;
     }
