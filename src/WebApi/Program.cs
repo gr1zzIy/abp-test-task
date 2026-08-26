@@ -11,6 +11,8 @@ builder.Services
 
 var app = builder.Build();
 
+await app.ApplyDatabaseMigrationsAsync();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerDocumentation();

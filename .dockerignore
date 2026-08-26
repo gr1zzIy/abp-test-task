@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+
+.git/
+.gitignore
+
+.idea/
+.vs/
+.vscode/
+
+.env
+
+tests/
+
+README.md
