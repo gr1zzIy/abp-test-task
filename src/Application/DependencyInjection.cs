@@ -1,9 +1,12 @@
+using Application.Abstractions.Pricing;
+using Application.Bookings.Create;
 using Application.ConferenceRooms.Create;
 using Application.ConferenceRooms.Delete;
 using Application.ConferenceRooms.GetAll;
 using Application.ConferenceRooms.GetById;
 using Application.ConferenceRooms.SearchAvailable;
 using Application.ConferenceRooms.Update;
+using Application.Pricing;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,12 +19,15 @@ public static class DependencyInjection
     {
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
+        services.AddSingleton<IRentalPriceCalculator, RentalPriceCalculator>();
+        
         services.AddScoped<CreateConferenceRoomHandler>();
         services.AddScoped<UpdateConferenceRoomHandler>();
         services.AddScoped<GetConferenceRoomsHandler>();
         services.AddScoped<GetConferenceRoomByIdHandler>();
         services.AddScoped<DeleteConferenceRoomHandler>();
         services.AddScoped<SearchAvailableConferenceRoomsHandler>();
+        services.AddScoped<CreateBookingHandler>();
         
         return services;
     }

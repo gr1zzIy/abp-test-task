@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IConferenceRoomRepository, ConferenceRoomRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
         
         return services;
     }

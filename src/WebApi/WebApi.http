@@ -112,3 +112,32 @@ GET {{WebApi_HostAddress}}/api/conference-rooms/available?startTime=2026-09-01T1
 Accept: application/json
 
 ###
+
+### Створення бронювання
+
+POST {{WebApi_HostAddress}}/api/bookings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "conferenceRoomId": "{{ConferenceRoomId}}",
+  "startTime": "2026-09-01T10:00:00+03:00",
+  "endTime": "2026-09-01T14:00:00+03:00",
+  "serviceIds": []
+}
+
+###
+
+### Створення бронювання - не валідний діапазон часу
+
+POST {{WebApi_HostAddress}}/api/bookings
+Content-Type: application/json
+
+{
+  "conferenceRoomId": "{{ConferenceRoomId}}",
+  "startTime": "2026-09-01T11:00:00+03:00",
+  "endTime": "2026-09-01T13:00:00+03:00",
+  "serviceIds": []
+}
+
+###
