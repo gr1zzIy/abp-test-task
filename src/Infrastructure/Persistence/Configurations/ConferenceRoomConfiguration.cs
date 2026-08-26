@@ -30,5 +30,28 @@ public class ConferenceRoomConfiguration : IEntityTypeConfiguration<ConferenceRo
         builder.HasIndex(cr => cr.Name);
 
         builder.HasIndex(cr => cr.Capacity);
+        
+        builder.HasData(
+        new
+        {
+            Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            Name = "Зал A",
+            Capacity = 50,
+            HourlyRate = 2000m
+        },
+        new
+        {
+            Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            Name = "Зал B",
+            Capacity = 100,
+            HourlyRate = 3500m
+        },
+        new
+        {
+            Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            Name = "Зал C",
+            Capacity = 30,
+            HourlyRate = 1500m
+        });
     }
 }

@@ -1,6 +1,6 @@
 @WebApi_HostAddress = http://localhost:5000
 ### сюди вставляти ідентифікатор конференц-зали
-@ConferenceRoomId = f935a14f-ec35-491e-aafd-b365ffa5cb9e
+@ConferenceRoomId = 11111111-1111-1111-1111-111111111111
 
 ### Ping
 
