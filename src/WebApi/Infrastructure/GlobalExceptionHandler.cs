@@ -12,11 +12,14 @@ namespace WebApi.Infrastructure;
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly IProblemDetailsService _problemDetailsService;
+    private readonly ILogger<GlobalExceptionHandler> _logger;
 
     public GlobalExceptionHandler(
-        IProblemDetailsService problemDetailsService)
+        IProblemDetailsService problemDetailsService,
+        ILogger<GlobalExceptionHandler> logger)
     {
         _problemDetailsService = problemDetailsService;
+        _logger = logger;
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -24,39 +27,98 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var statusCode = exception switch
-        {
-            ValidationException => StatusCodes.Status400BadRequest,
-            BadRequestException => StatusCodes.Status400BadRequest,
-            NotFoundException => StatusCodes.Status404NotFound,
-            ConflictException => StatusCodes.Status409Conflict,
-            _ => StatusCodes.Status500InternalServerError
-        };
+        var problemDetails = CreateProblemDetails(
+            httpContext,
+            exception);
 
-        httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.StatusCode =
+            problemDetails.Status ?? StatusCodes.Status500InternalServerError;
+
+        // Неочікувані помилки не передаємо клієнту,
+        // але зберігаємо повну інформацію про них у серверних логах.
+        if (httpContext.Response.StatusCode >= StatusCodes.Status500InternalServerError)
+        {
+            _logger.LogError(
+                exception,
+                "Unhandled exception while processing {Method} {Path}. TraceId: {TraceId}",
+                httpContext.Request.Method,
+                httpContext.Request.Path,
+                httpContext.TraceIdentifier);
+        }
 
         return await _problemDetailsService.TryWriteAsync(
             new ProblemDetailsContext
             {
                 HttpContext = httpContext,
-                ProblemDetails = new ProblemDetails
-                {
-                    Status = statusCode,
-                    Title = GetTitle(statusCode),
-                    Detail = exception.Message
-                },
+                ProblemDetails = problemDetails,
                 Exception = exception
             });
     }
 
-    private static string GetTitle(int statusCode)
+    private static ProblemDetails CreateProblemDetails(
+        HttpContext httpContext,
+        Exception exception)
     {
-        return statusCode switch
+        ProblemDetails problemDetails = exception switch
         {
-            StatusCodes.Status400BadRequest => "Bad request",
-            StatusCodes.Status404NotFound => "Not found",
-            StatusCodes.Status409Conflict => "Conflict",
-            _ => "Internal server error"
+            ValidationException validationException =>
+                CreateValidationProblemDetails(validationException),
+
+            BadRequestException => new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad request",
+                Detail = exception.Message
+            },
+
+            NotFoundException => new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Not found",
+                Detail = exception.Message
+            },
+
+            ConflictException => new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Conflict",
+                Detail = exception.Message
+            },
+
+            _ => new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Internal server error",
+
+                // Внутрішні повідомлення exception можуть містити SQL,
+                // назви таблиць, connection details або іншу техн інфу.
+                Detail = "An unexpected error occurred."
+            }
+        };
+
+        problemDetails.Extensions["traceId"] =
+            httpContext.TraceIdentifier;
+
+        return problemDetails;
+    }
+    
+    private static ValidationProblemDetails CreateValidationProblemDetails(
+        ValidationException exception)
+    {
+        var errors = exception.Errors
+            .GroupBy(error => error.PropertyName)
+            .ToDictionary(
+                group => group.Key,
+                group => group
+                    .Select(error => error.ErrorMessage)
+                    .Distinct()
+                    .ToArray());
+
+        return new ValidationProblemDetails(errors)
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Validation error",
+            Detail = "One or more validation errors occurred."
         };
     }
 }

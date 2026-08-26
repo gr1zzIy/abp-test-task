@@ -184,7 +184,7 @@ public sealed class CreateBookingHandlerTests
                 (booking, _) => createdBooking = booking)
             .Returns(Task.CompletedTask);
 
-        var result = await _handler.HandleAsync(command);
+        await _handler.HandleAsync(command);
 
         Assert.NotNull(createdBooking);
 
