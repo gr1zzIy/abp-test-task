@@ -13,10 +13,21 @@ namespace WebApi.Controllers;
 public sealed class ReportsController : ControllerBase
 {
     /// <summary>
-    /// Повертає кількість бронювань і сумарний дохід за період.
+    /// Формує звіт щодо доходу за заданий період.
     /// </summary>
+    /// <remarks>
+    /// До звіту потрапляють бронювання, час початку яких знаходиться
+    /// у проміжку [from, to).
+    /// </remarks>
+    /// <param name="from">Початок звітного періоду.</param>
+    /// <param name="to">Кінець звітного періоду, який не включається у вибірку.</param>
     [HttpGet("revenue")]
     [EnableRateLimiting(RateLimitingPolicies.Reports)]
+    [ProducesResponseType<RevenueReportResult>(
+        StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(
+        StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<RevenueReportResult>> GetRevenue(
         [FromQuery] DateTimeOffset from,
         [FromQuery] DateTimeOffset to,
@@ -31,10 +42,21 @@ public sealed class ReportsController : ControllerBase
     }
 
     /// <summary>
-    /// Повертає статистику використання конференц-залів.
+    /// Формує статистику використання конференц-залів.
     /// </summary>
+    /// <remarks>
+    /// Для кожного залу повертається кількість бронювань
+    /// та сумарна кількість заброньованих годин за період.
+    /// </remarks>
+    /// <param name="from">Початок звітного періоду.</param>
+    /// <param name="to">Кінець звітного періоду, який не включається у вибірку.</param>
     [HttpGet("room-utilization")]
     [EnableRateLimiting(RateLimitingPolicies.Reports)]
+    [ProducesResponseType<IReadOnlyCollection<RoomUtilizationResult>>(
+        StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(
+        StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<IReadOnlyCollection<RoomUtilizationResult>>> GetRoomUtilization(
         [FromQuery] DateTimeOffset from,
         [FromQuery] DateTimeOffset to,
@@ -49,10 +71,21 @@ public sealed class ReportsController : ControllerBase
     }
 
     /// <summary>
-    /// Повертає рейтинг додаткових послуг за частотою використання.
+    /// Формує рейтинг додаткових послуг за популярністю.
     /// </summary>
+    /// <remarks>
+    /// Послуги сортуються за кількістю їх використань
+    /// у бронюваннях за заданий період.
+    /// </remarks>
+    /// <param name="from">Початок звітного періоду.</param>
+    /// <param name="to">Кінець звітного періоду, який не включається у вибірку.</param>
     [HttpGet("popular-services")]
     [EnableRateLimiting(RateLimitingPolicies.Reports)]
+    [ProducesResponseType<IReadOnlyCollection<PopularServiceResult>>(
+        StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(
+        StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<IReadOnlyCollection<PopularServiceResult>>> GetPopularServices(
         [FromQuery] DateTimeOffset from,
         [FromQuery] DateTimeOffset to,
