@@ -1,5 +1,6 @@
 using Application.Abstractions.Persistence;
 using Application.Abstractions.Pricing;
+using Application.Abstractions.Time;
 using Application.Bookings.Create;
 using Application.Common.Exceptions;
 using Domain.Entities;
@@ -18,7 +19,8 @@ public sealed class CreateBookingHandlerTests
     private readonly Mock<IValidator<CreateBookingCommand>> _validator = new();
 
     private readonly CreateBookingHandler _handler;
-
+    private readonly Mock<IBusinessTimeZone> _businessTimeZone = new();
+    
     public CreateBookingHandlerTests()
     {
         _handler = new CreateBookingHandler(
@@ -26,6 +28,7 @@ public sealed class CreateBookingHandlerTests
             _bookingRepository.Object,
             _unitOfWork.Object,
             _priceCalculator.Object,
+            _businessTimeZone.Object,
             _validator.Object);
 
         _validator
@@ -33,6 +36,11 @@ public sealed class CreateBookingHandlerTests
                 It.IsAny<CreateBookingCommand>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
+        
+        _businessTimeZone
+            .Setup(x => x.ConvertFromUtc(It.IsAny<DateTimeOffset>()))
+            .Returns((DateTimeOffset utcTime) =>
+                utcTime.ToOffset(TimeSpan.FromHours(3)));
     }
 
     [Fact]
@@ -285,33 +293,6 @@ public sealed class CreateBookingHandlerTests
         Assert.Equal(4500m, result.TotalPrice);
     }
 
-    [Fact]
-    public async Task HandleAsync_PricingCalculator_ReceivesOriginalLocalTime()
-    {
-        var room = CreateConferenceRoom();
-        var command = CreateCommand(conferenceRoomId: room.Id);
-
-        SetupAvailableRoom(room, command);
-
-        _priceCalculator
-            .Setup(x => x.Calculate(
-                room.HourlyRate,
-                command.StartTime,
-                command.EndTime))
-            .Returns(4000m);
-
-        await _handler.HandleAsync(command);
-
-        // Тарифікація повинна виконуватися за локальним часом бронювання,
-        // а UTC використовується лише для перевірки та збереження в БД.
-        _priceCalculator.Verify(
-            x => x.Calculate(
-                room.HourlyRate,
-                command.StartTime,
-                command.EndTime),
-            Times.Once);
-    }
-
     private void SetupAvailableRoom(
         ConferenceRoom room,
         CreateBookingCommand command)
@@ -335,6 +316,70 @@ public sealed class CreateBookingHandlerTests
             .ReturnsAsync(1);
     }
 
+    [Fact]
+    public async Task HandleAsync_RequestWithDifferentOffset_UsesBusinessTimeForPricing()
+    {
+        var room = CreateConferenceRoom();
+
+        var command = new CreateBookingCommand(
+            room.Id,
+            new DateTimeOffset(
+                2026, 9, 1, 9, 0, 0,
+                TimeSpan.Zero),
+            new DateTimeOffset(
+                2026, 9, 1, 11, 0, 0,
+                TimeSpan.Zero),
+            []);
+
+        _conferenceRoomRepository
+            .Setup(x => x.GetByIdAsync(
+                room.Id,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(room);
+
+        _businessTimeZone
+            .Setup(x => x.ConvertFromUtc(command.StartTime.ToUniversalTime()))
+            .Returns(new DateTimeOffset(
+                2026, 9, 1, 12, 0, 0,
+                TimeSpan.FromHours(3)));
+
+        _businessTimeZone
+            .Setup(x => x.ConvertFromUtc(command.EndTime.ToUniversalTime()))
+            .Returns(new DateTimeOffset(
+                2026, 9, 1, 14, 0, 0,
+                TimeSpan.FromHours(3)));
+
+        _bookingRepository
+            .Setup(x => x.HasOverlapAsync(
+                room.Id,
+                command.StartTime.ToUniversalTime(),
+                command.EndTime.ToUniversalTime(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        _priceCalculator
+            .Setup(x => x.Calculate(
+                room.HourlyRate,
+                It.IsAny<DateTimeOffset>(),
+                It.IsAny<DateTimeOffset>()))
+            .Returns(4600m);
+
+        await _handler.HandleAsync(command);
+
+        // Незалежно від offset клієнта тарифікація виконується
+        // за локальним бізнесовим часом 12:00–14:00.
+        _priceCalculator.Verify(
+            x => x.Calculate(
+                room.HourlyRate,
+                new DateTimeOffset(
+                    2026, 9, 1, 12, 0, 0,
+                    TimeSpan.FromHours(3)),
+                new DateTimeOffset(
+                    2026, 9, 1, 14, 0, 0,
+                    TimeSpan.FromHours(3))),
+            Times.Once);
+    }
+    
     private static ConferenceRoom CreateConferenceRoom(
         ICollection<Service>? services = null)
     {

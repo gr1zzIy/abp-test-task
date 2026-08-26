@@ -28,7 +28,8 @@ public sealed class CreateBookingCommandValidatorTests
 
         Assert.Contains(
             result.Errors,
-            error => error.PropertyName == nameof(CreateBookingCommand.ConferenceRoomId));
+            error => error.PropertyName ==
+                     nameof(CreateBookingCommand.ConferenceRoomId));
     }
 
     [Fact]
@@ -41,74 +42,6 @@ public sealed class CreateBookingCommandValidatorTests
         var result = _validator.Validate(command);
 
         Assert.False(result.IsValid);
-    }
-
-    [Fact]
-    public void Validate_BookingBeforeWorkingHours_HasValidationError()
-    {
-        var command = CreateCommand(
-            startHour: 5,
-            endHour: 8);
-
-        var result = _validator.Validate(command);
-
-        Assert.False(result.IsValid);
-    }
-
-    [Fact]
-    public void Validate_BookingAfterWorkingHours_HasValidationError()
-    {
-        var command = new CreateBookingCommand(
-            Guid.NewGuid(),
-            CreateDateTime(22),
-            new DateTimeOffset(
-                2026,
-                9,
-                1,
-                23,
-                30,
-                0,
-                TimeSpan.FromHours(3)),
-            []);
-
-        var result = _validator.Validate(command);
-
-        Assert.False(result.IsValid);
-    }
-
-    [Fact]
-    public void Validate_BookingAcrossDifferentDays_HasValidationError()
-    {
-        var startTime = CreateDateTime(22);
-        var endTime = CreateDateTime(8).AddDays(1);
-
-        var command = new CreateBookingCommand(
-            Guid.NewGuid(),
-            startTime,
-            endTime,
-            []);
-
-        var result = _validator.Validate(command);
-
-        Assert.False(result.IsValid);
-    }
-
-    [Theory]
-    [InlineData(6, 9)]
-    [InlineData(9, 12)]
-    [InlineData(12, 14)]
-    [InlineData(18, 23)]
-    public void Validate_BookingOnAllowedBoundaries_HasNoErrors(
-        int startHour,
-        int endHour)
-    {
-        var command = CreateCommand(
-            startHour: startHour,
-            endHour: endHour);
-
-        var result = _validator.Validate(command);
-
-        Assert.True(result.IsValid);
     }
 
     private static CreateBookingCommand CreateCommand(

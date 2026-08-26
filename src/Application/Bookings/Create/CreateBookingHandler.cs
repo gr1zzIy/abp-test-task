@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Persistence;
 using Application.Abstractions.Pricing;
+using Application.Abstractions.Time;
 using Application.Common.Exceptions;
 using Domain.Entities;
 using FluentValidation;
@@ -18,18 +19,21 @@ public sealed class CreateBookingHandler
     private readonly IUnitOfWork _unitOfWork;
     private readonly IRentalPriceCalculator _priceCalculator;
     private readonly IValidator<CreateBookingCommand> _validator;
-
+    private readonly IBusinessTimeZone _businessTimeZone;
+    
     public CreateBookingHandler(
         IConferenceRoomRepository conferenceRoomRepository,
         IBookingRepository bookingRepository,
         IUnitOfWork unitOfWork,
         IRentalPriceCalculator priceCalculator,
+        IBusinessTimeZone businessTimeZone,
         IValidator<CreateBookingCommand> validator)
     {
         _conferenceRoomRepository = conferenceRoomRepository;
         _bookingRepository = bookingRepository;
         _unitOfWork = unitOfWork;
         _priceCalculator = priceCalculator;
+        _businessTimeZone = businessTimeZone;
         _validator = validator;
     }
 
@@ -69,6 +73,15 @@ public sealed class CreateBookingHandler
         var startTimeUtc = command.StartTime.ToUniversalTime();
         var endTimeUtc = command.EndTime.ToUniversalTime();
 
+        // Бізнесові часові правила завжди перевіряються у фіксованій
+        // часовій зоні компанії, а не за offset, який передав клієнт.
+        var businessStartTime = _businessTimeZone.ConvertFromUtc(startTimeUtc);
+        var businessEndTime = _businessTimeZone.ConvertFromUtc(endTimeUtc);
+
+        ValidateBusinessHours(
+            businessStartTime,
+            businessEndTime);
+
         var hasOverlap = await _bookingRepository.HasOverlapAsync(
             conferenceRoom.Id,
             startTimeUtc,
@@ -85,8 +98,8 @@ public sealed class CreateBookingHandler
         // тому розрахунок виконуємо до перетворення часу в UTC.
         var rentalPrice = _priceCalculator.Calculate(
             conferenceRoom.HourlyRate,
-            command.StartTime,
-            command.EndTime);
+            businessStartTime,
+            businessEndTime);
 
         var servicesPrice = selectedServices.Sum(service => service.Price);
 
@@ -114,5 +127,19 @@ public sealed class CreateBookingHandler
         return new CreateBookingResult(
             booking.Id,
             booking.TotalPrice);
+    }
+    
+    private static void ValidateBusinessHours(
+        DateTimeOffset startTime,
+        DateTimeOffset endTime)
+    {
+        // з 06:00–23:00 бронювання поза цими межами не дозволяємо.
+        if (startTime.Date != endTime.Date ||
+            startTime.TimeOfDay < TimeSpan.FromHours(6) ||
+            endTime.TimeOfDay > TimeSpan.FromHours(23))
+        {
+            throw new BadRequestException(
+                "Бронювання повинно бути в межах 06:00–23:00 одного календарного дня.");
+        }
     }
 }
