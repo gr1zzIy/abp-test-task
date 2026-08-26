@@ -1,4 +1,5 @@
 using Application.Abstractions.Persistence;
+using Application.Abstractions.Reporting;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
         
         return services;
     }

@@ -148,3 +148,24 @@ GET {{WebApi_HostAddress}}/api/services
 Accept: application/json
 
 ###
+
+### Звіт про доходи
+
+GET {{WebApi_HostAddress}}/api/reports/revenue?from=2026-09-01T00%3A00%3A00%2B03%3A00&to=2026-10-01T00%3A00%3A00%2B03%3A00
+Accept: application/json
+
+###
+
+### Звіт про завантаженість номерів
+
+GET {{WebApi_HostAddress}}/api/reports/room-utilization?from=2026-09-01T00%3A00%3A00%2B03%3A00&to=2026-10-01T00%3A00%3A00%2B03%3A00
+Accept: application/json
+
+###
+
+### Звіт про популярні послуги
+
+GET {{WebApi_HostAddress}}/api/reports/popular-services?from=2026-09-01T00%3A00%3A00%2B03%3A00&to=2026-10-01T00%3A00%3A00%2B03%3A00
+Accept: application/json
+
+###
