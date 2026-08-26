@@ -2,6 +2,7 @@ using Application.ConferenceRooms.Create;
 using Application.ConferenceRooms.Delete;
 using Application.ConferenceRooms.GetAll;
 using Application.ConferenceRooms.GetById;
+using Application.ConferenceRooms.SearchAvailable;
 using Application.ConferenceRooms.Update;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Contracts.ConferenceRooms;
@@ -104,5 +105,28 @@ public class ConferenceRoomsController : ControllerBase
             cancellationToken);
 
         return NoContent();
+    }
+    
+    [HttpGet("available")]
+    [ProducesResponseType<IReadOnlyCollection<AvailableConferenceRoomResult>>(
+    StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<IReadOnlyCollection<AvailableConferenceRoomResult>>> GetAvailable(
+            [FromQuery] DateTimeOffset startTime,
+            [FromQuery] DateTimeOffset endTime,
+            [FromQuery] int capacity,
+            [FromServices] SearchAvailableConferenceRoomsHandler handler,
+            CancellationToken cancellationToken)
+    {
+        var query = new SearchAvailableConferenceRoomsQuery(
+        startTime,
+        endTime,
+        capacity);
+
+        var result = await handler.HandleAsync(
+        query,
+        cancellationToken);
+
+        return Ok(result);
     }
 }

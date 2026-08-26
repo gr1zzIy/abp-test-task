@@ -15,6 +15,7 @@ public interface IConferenceRoomRepository
     /// Ідентифікатор залу, який потрібно виключити з перевірки.
     /// Використовується під час редагування залу.
     /// </param>
+    /// <param name="cancellationToken"></param>
     Task<bool> ExistsByNameAsync(
         string name,
         Guid? excludeId = null,
@@ -63,4 +64,10 @@ public interface IConferenceRoomRepository
     /// </summary>
     /// <param name="conferenceRoom">Конференц-зал.</param>
     void Remove(ConferenceRoom conferenceRoom);
+    
+    Task<IReadOnlyCollection<ConferenceRoom>> GetAvailableAsync(
+            DateTimeOffset startTime,
+            DateTimeOffset endTime,
+            int capacity,
+            CancellationToken cancellationToken = default);
 }

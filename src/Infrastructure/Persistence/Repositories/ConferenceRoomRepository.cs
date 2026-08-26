@@ -70,4 +70,24 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
     {
         _dbContext.ConferenceRooms.Remove(conferenceRoom);
     }
+    
+    public async Task<IReadOnlyCollection<ConferenceRoom>> GetAvailableAsync(
+            DateTimeOffset startTime,
+            DateTimeOffset endTime,
+            int capacity,
+            CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ConferenceRooms
+                .AsNoTracking()
+                .Include(room => room.Services)
+                .Where(room => room.Capacity >= capacity)
+                // Зал є доступним, якщо жодне існуюче бронювання
+                // не перетинається із запитаним часовим проміжком.
+                .Where(room => !room.Bookings.Any(booking =>
+                        booking.StartTime < endTime &&
+                        booking.EndTime > startTime))
+                .OrderBy(room => room.Capacity)
+                .ThenBy(room => room.Name)
+                .ToListAsync(cancellationToken);
+    }
 }

@@ -1,6 +1,6 @@
 @WebApi_HostAddress = http://localhost:5000
 ### сюди вставляти ідентифікатор конференц-зали
-@ConferenceRoomId = 05f0f3cd-871c-4a14-9d23-ada0a44992fa
+@ConferenceRoomId = f935a14f-ec35-491e-aafd-b365ffa5cb9e
 
 ### Ping
 
@@ -96,5 +96,19 @@ DELETE {{WebApi_HostAddress}}/api/conference-rooms/{{ConferenceRoomId}}
 ### Видалення конференц-зали - не знайдено
 
 DELETE {{WebApi_HostAddress}}/api/conference-rooms/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+
+###
+
+### Пошук доступних конференц-залів
+
+GET {{WebApi_HostAddress}}/api/conference-rooms/available?startTime=2026-09-01T10:00:00%2B03:00&endTime=2026-09-01T14:00:00%2B03:00&capacity=50
+Accept: application/json
+
+###
+
+### Пошук доступних конференц-залів - не валідний діапазон часу
+
+GET {{WebApi_HostAddress}}/api/conference-rooms/available?startTime=2026-09-01T14:00:00%2B03:00&endTime=2026-09-01T10:00:00%2B03:00&capacity=50
+Accept: application/json
 
 ###
