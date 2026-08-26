@@ -27,7 +27,7 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
         new
         {
             Id = 1,
-            Name = "Проєктор",
+            Name = "РџСЂРѕС”РєС‚РѕСЂ",
             Price = 500m
         },
         new
@@ -39,7 +39,7 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
         new
         {
             Id = 3,
-            Name = "Звук",
+            Name = "Р—РІСѓРє",
             Price = 700m
         });
     }

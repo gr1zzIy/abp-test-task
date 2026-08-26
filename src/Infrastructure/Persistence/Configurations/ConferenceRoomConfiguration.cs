@@ -35,21 +35,21 @@ public class ConferenceRoomConfiguration : IEntityTypeConfiguration<ConferenceRo
         new
         {
             Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            Name = "Çàë A",
+            Name = "Ð—Ð°Ð» A",
             Capacity = 50,
             HourlyRate = 2000m
         },
         new
         {
             Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            Name = "Çàë B",
+            Name = "Ð—Ð°Ð» B",
             Capacity = 100,
             HourlyRate = 3500m
         },
         new
         {
             Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-            Name = "Çàë C",
+            Name = "Ð—Ð°Ð» C",
             Capacity = 30,
             HourlyRate = 1500m
         });
