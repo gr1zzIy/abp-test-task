@@ -1,9 +1,11 @@
 using Application.Abstractions.Persistence;
 using Application.Abstractions.Reporting;
 using Application.Abstractions.Time;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Time;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,13 +35,25 @@ public static class DependencyInjection
             options.UseSnakeCaseNamingConvention();
         });
 
+        services
+            .AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<AppDbContext>();
+        
         services.AddScoped<IConferenceRoomRepository, ConferenceRoomRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
-        
-        
         
         return services;
     }
