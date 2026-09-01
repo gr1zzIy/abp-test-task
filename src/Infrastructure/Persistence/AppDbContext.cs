@@ -1,18 +1,22 @@
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
-    public DbSet<ConferenceRoom> ConferenceRooms => Set<ConferenceRoom>();
-    public DbSet<Booking> Bookings => Set<Booking>();
-    public DbSet<Service> Services => Set<Service>();
-    
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
+    
+    public DbSet<ConferenceRoom> ConferenceRooms => Set<ConferenceRoom>();
+    public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<Service> Services => Set<Service>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
