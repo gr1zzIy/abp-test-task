@@ -8,7 +8,7 @@
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
+      
     ports:
       - "5432:5432"
 
@@ -48,7 +48,8 @@
       Booking__TimeZone: Europe/Kyiv
 
       Database__ApplyMigrationsOnStartup: "true"
-
+      
+      Jwt__Key: ${JWT_KEY}
     ports:
       - "5034:8080"
 

@@ -1,4 +1,6 @@
 using Application.Abstractions.Pricing;
+using Application.Authentication.Login;
+using Application.Authentication.Register;
 using Application.Bookings.Create;
 using Application.ConferenceRooms.Create;
 using Application.ConferenceRooms.Delete;
@@ -37,6 +39,9 @@ public static class DependencyInjection
         services.AddScoped<RoomUtilizationHandler>();
         services.AddScoped<PopularServicesHandler>();
         services.AddScoped<RevenueReportHandler>();
+        
+        services.AddScoped<RegisterHandler>();
+        services.AddScoped<LoginHandler>();
         
         return services;
     }
