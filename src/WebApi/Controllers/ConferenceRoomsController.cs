@@ -1,9 +1,11 @@
+using Application.Common.Security;
 using Application.ConferenceRooms.Create;
 using Application.ConferenceRooms.Delete;
 using Application.ConferenceRooms.GetAll;
 using Application.ConferenceRooms.GetById;
 using Application.ConferenceRooms.SearchAvailable;
 using Application.ConferenceRooms.Update;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Contracts.ConferenceRooms;
@@ -22,6 +24,7 @@ public class ConferenceRoomsController : ControllerBase
     /// Для залу задаються назва, місткість, базова погодинна
     /// вартість та перелік доступних додаткових послуг.
     /// </remarks>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     [EnableRateLimiting(RateLimitingPolicies.Write)]
     [ProducesResponseType<CreateConferenceRoomResult>(
@@ -101,6 +104,7 @@ public class ConferenceRoomsController : ControllerBase
     /// вартість та повний набір доступних послуг.
     /// </remarks>
     /// <param name="id">Ідентифікатор конференц-залу.</param>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id:guid}")]
     [EnableRateLimiting(RateLimitingPolicies.Write)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -139,6 +143,7 @@ public class ConferenceRoomsController : ControllerBase
     /// Це дозволяє зберегти історичні дані.
     /// </remarks>
     /// <param name="id">Ідентифікатор конференц-залу.</param>
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:guid}")]
     [EnableRateLimiting(RateLimitingPolicies.Write)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

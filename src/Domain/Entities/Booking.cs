@@ -28,6 +28,11 @@ public class Booking
     public ConferenceRoom ConferenceRoom { get; set; } = null!;
 
     /// <summary>
+    /// Ідентифікатор користувача, який створив бронювання.
+    /// </summary>
+    public Guid UserId { get; set; }
+    
+    /// <summary>
     /// Додаткові послуги, обрані для бронювання.
     /// </summary>
     public ICollection<Service> SelectedServices { get; set; }

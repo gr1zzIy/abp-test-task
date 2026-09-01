@@ -1,4 +1,6 @@
 ﻿using Application.Bookings.Create;
+using Application.Common.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Contracts.Bookings;
@@ -25,6 +27,7 @@ public sealed class BookingsController : ControllerBase
 	/// Час бронювання зберігається в UTC, а тарифікація виконується
 	/// відповідно до часової зони бізнесу.
 	/// </remarks>
+	[Authorize(Roles = Roles.Client)]
 	[HttpPost]
 	[EnableRateLimiting(RateLimitingPolicies.Booking)]
 	[ProducesResponseType<CreateBookingResult>(

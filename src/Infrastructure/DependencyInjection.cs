@@ -110,6 +110,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddHostedService<IdentitySeeder>();
         
         return services;
     }

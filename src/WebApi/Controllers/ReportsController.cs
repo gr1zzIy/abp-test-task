@@ -1,13 +1,16 @@
+using Application.Common.Security;
 using Application.Reports;
 using Application.Reports.PopularServices;
 using Application.Reports.Revenue;
 using Application.Reports.RoomUtilization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Infrastructure;
 
 namespace WebApi.Controllers;
 
+[Authorize(Roles = Roles.Admin)]
 [ApiController]
 [Route("api/reports")]
 public sealed class ReportsController : ControllerBase

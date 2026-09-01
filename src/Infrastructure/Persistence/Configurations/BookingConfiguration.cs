@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,6 +23,15 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsRequired()
             .HasPrecision(18, 2);
 
+        builder.Property(b => b.UserId)
+            .IsRequired();
+        
+        builder.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(b => b.UserId)
+            // Видалення користувача не повинно знищувати історію бронювань.
+            .OnDelete(DeleteBehavior.Restrict);
+        
         builder.HasOne(b => b.ConferenceRoom)
             .WithMany(cr => cr.Bookings)
             .HasForeignKey(b => b.ConferenceRoomId)
@@ -41,5 +51,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             b.StartTime,
             b.EndTime
         });
+        
+        builder.HasIndex(b => b.UserId);
     }
 }

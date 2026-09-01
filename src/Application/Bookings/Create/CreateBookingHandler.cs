@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Persistence;
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Persistence;
 using Application.Abstractions.Pricing;
 using Application.Abstractions.Time;
 using Application.Common.Exceptions;
@@ -20,6 +21,7 @@ public sealed class CreateBookingHandler
     private readonly IRentalPriceCalculator _priceCalculator;
     private readonly IValidator<CreateBookingCommand> _validator;
     private readonly IBusinessTimeZone _businessTimeZone;
+    private readonly ICurrentUser _currentUser;
     
     public CreateBookingHandler(
         IConferenceRoomRepository conferenceRoomRepository,
@@ -27,7 +29,8 @@ public sealed class CreateBookingHandler
         IUnitOfWork unitOfWork,
         IRentalPriceCalculator priceCalculator,
         IBusinessTimeZone businessTimeZone,
-        IValidator<CreateBookingCommand> validator)
+        IValidator<CreateBookingCommand> validator,
+        ICurrentUser currentUser)
     {
         _conferenceRoomRepository = conferenceRoomRepository;
         _bookingRepository = bookingRepository;
@@ -35,6 +38,7 @@ public sealed class CreateBookingHandler
         _priceCalculator = priceCalculator;
         _businessTimeZone = businessTimeZone;
         _validator = validator;
+        _currentUser = currentUser;
     }
 
     public async Task<CreateBookingResult> HandleAsync(
@@ -45,6 +49,13 @@ public sealed class CreateBookingHandler
             command,
             cancellationToken);
 
+        if (!_currentUser.IsAuthenticated ||
+            _currentUser.UserId is null)
+        {
+            throw new UnauthorizedException(
+                "User is not authenticated.");
+        }
+        
         var conferenceRoom = await _conferenceRoomRepository.GetByIdAsync(
             command.ConferenceRoomId,
             cancellationToken);
@@ -112,6 +123,7 @@ public sealed class CreateBookingHandler
         {
             Id = Guid.NewGuid(),
             ConferenceRoomId = conferenceRoom.Id,
+            UserId = _currentUser.UserId.Value,
             StartTime = startTimeUtc,
             EndTime = endTimeUtc,
             TotalPrice = totalPrice,
