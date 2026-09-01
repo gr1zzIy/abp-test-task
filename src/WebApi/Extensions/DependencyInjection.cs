@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Threading.RateLimiting;
+using Application.Abstractions.Authentication;
 using Microsoft.OpenApi;
 using WebApi.Infrastructure;
 
@@ -15,6 +16,10 @@ public static class DependencyInjection
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        
         AddSwagger(services);
         AddRateLimiting(services);
 

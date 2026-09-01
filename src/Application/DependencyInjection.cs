@@ -1,5 +1,6 @@
 using Application.Abstractions.Pricing;
 using Application.Authentication.Login;
+using Application.Authentication.Me;
 using Application.Authentication.Register;
 using Application.Bookings.Create;
 using Application.ConferenceRooms.Create;
@@ -42,6 +43,7 @@ public static class DependencyInjection
         
         services.AddScoped<RegisterHandler>();
         services.AddScoped<LoginHandler>();
+        services.AddScoped<GetCurrentUserHandler>();
         
         return services;
     }
