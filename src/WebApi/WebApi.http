@@ -1,4 +1,4 @@
-@WebApi_HostAddress = http://localhost:5000
+@WebApi_HostAddress = http://localhost:5034
 ### сюди вставляти ідентифікатор конференц-зали
 @ConferenceRoomId = 11111111-1111-1111-1111-111111111111
 
@@ -166,6 +166,71 @@ Accept: application/json
 ### Звіт про популярні послуги
 
 GET {{WebApi_HostAddress}}/api/reports/popular-services?from=2026-09-01T00%3A00%3A00%2B03%3A00&to=2026-10-01T00%3A00%3A00%2B03%3A00
+Accept: application/json
+
+###
+
+### Реєстрація нового клієнта
+
+POST {{WebApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "client@example.com",
+  "password": "Password123"
+}
+
+###
+
+### Реєстрація дублікату клієнта
+
+POST {{WebApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "client@example.com",
+  "password": "Password123"
+}
+
+###
+
+### Логін клієнта
+
+POST {{WebApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "client@example.com",
+  "password": "Password123"
+}
+
+###
+
+### Логін клієнта - неправильний пароль
+
+POST {{WebApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "client@example.com",
+  "password": "WrongPassword123"
+}
+
+###
+
+@AccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYzkwM2Y1Ni0wYjFmLTQ0YzctOGNjMi0wNjQ3NTUzYjczNmQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJjbGllbnRAZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImVjOTAzZjU2LTBiMWYtNDRjNy04Y2MyLTA2NDc1NTNiNzM2ZCIsImp0aSI6ImEzN2E1NzkzLTZiZTctNDBmMi1hYjljLWM4Y2VlYmViMDZkYiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkNsaWVudCIsImV4cCI6MTc4ODI5NTQ5OSwiaXNzIjoiQ29uZmVyZW5jZUJvb2tpbmciLCJhdWQiOiJDb25mZXJlbmNlQm9va2luZy5DbGllbnQifQ.EHVh-_WQrLvOTpaQi6PUx2xZ0jzHpa8uDpl53kKkhgw
+
+### Поточний користувач - авторизований
+
+GET {{WebApi_HostAddress}}/api/auth/me
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Поточний користувач - не авторизований
+
+GET {{WebApi_HostAddress}}/api/auth/me
 Accept: application/json
 
 ###

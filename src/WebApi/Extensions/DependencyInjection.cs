@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Threading.RateLimiting;
+using Application.Abstractions.Authentication;
 using Microsoft.OpenApi;
 using WebApi.Infrastructure;
 
@@ -15,6 +16,10 @@ public static class DependencyInjection
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        
         AddSwagger(services);
         AddRateLimiting(services);
 
@@ -40,6 +45,23 @@ public static class DependencyInjection
             options.CustomSchemaIds(
                 type => type.FullName?.Replace("+", ".") ?? type.Name);
 
+            options.AddSecurityDefinition(
+                "Bearer",
+                new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Введіть JWT access token."
+                });
+
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+            });
+            
             IncludeXmlComments(
                 options,
                 $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
