@@ -16,15 +16,17 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         // Системний час та калькулятор ціни
-        services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IRentalPriceCalculator, RentalPriceCalculator>();
 
         // Автоматична реєстрація всіх Handlers (закінчуються на "Handler")
         var handlerTypes = assembly.GetTypes()
-            .Where(type => 
-                type.IsClass && 
-                !type.IsAbstract && 
-                type.Name.EndsWith("Handler"));
+            .Where(type =>
+                type.IsClass &&
+                !type.IsAbstract &&
+                !type.ContainsGenericParameters &&
+                type.Name.EndsWith(
+                    "Handler",
+                    StringComparison.Ordinal));
 
         foreach (var handlerType in handlerTypes)
         {
