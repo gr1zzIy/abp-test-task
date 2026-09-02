@@ -407,7 +407,7 @@ public sealed class CreateBookingHandlerTests
         _currentUser
             .SetupGet(x => x.UserId)
             .Returns(userId);
-        
+
         Booking? createdBooking = null;
 
         _bookingRepository
@@ -420,10 +420,10 @@ public sealed class CreateBookingHandlerTests
 
         await _handler.HandleAsync(command);
 
-        // UserId завжди береться з JWT-контексту,
-        // а не з даних, які може передати клієнт.
         Assert.NotNull(createdBooking);
-        Assert.Equal(userId, createdBooking.UserId);
+        Assert.Equal(
+            userId,
+            createdBooking.UserId);
     }
     
     [Fact]
@@ -435,8 +435,23 @@ public sealed class CreateBookingHandlerTests
             .SetupGet(x => x.IsAuthenticated)
             .Returns(false);
 
+        _currentUser
+            .SetupGet(x => x.UserId)
+            .Returns((Guid?)null);
+
         await Assert.ThrowsAsync<UnauthorizedException>(() =>
             _handler.HandleAsync(command));
+
+        _bookingRepository.Verify(
+            x => x.AddAsync(
+                It.IsAny<Booking>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        _unitOfWork.Verify(
+            x => x.SaveChangesAsync(
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
     
     private static ConferenceRoom CreateConferenceRoom(
