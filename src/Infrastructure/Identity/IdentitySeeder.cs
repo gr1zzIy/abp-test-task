@@ -1,4 +1,5 @@
 using Application.Common.Security;
+using Infrastructure.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

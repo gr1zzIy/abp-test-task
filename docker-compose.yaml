@@ -30,33 +30,31 @@
     build:
       context: .
       dockerfile: Dockerfile
-
+    
     container_name: conference-booking-api
     restart: unless-stopped
-
+    
+    env_file:
+      - .env
+    
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-
+      
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;
         Port=5432;
         Database=${POSTGRES_DB};
         Username=${POSTGRES_USER};
         Password=${POSTGRES_PASSWORD}
-
+      
       Booking__TimeZone: Europe/Kyiv
-
       Database__ApplyMigrationsOnStartup: "true"
-      
-      Jwt__Key: ${JWT_KEY}
-      
       Admin__SeedOnStartup: "true"
-      Admin__Email: ${ADMIN_EMAIL}
-      Admin__Password: ${ADMIN_PASSWORD}
+    
     ports:
       - "5034:8080"
-
+    
     depends_on:
       postgres:
         condition: service_healthy

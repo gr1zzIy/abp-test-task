@@ -16,4 +16,13 @@ public interface IBookingRepository
 	Task AddAsync(
 			Booking booking,
 			CancellationToken cancellationToken = default);
+	
+	Task<IReadOnlyCollection<Booking>> GetAllAsync(
+		Guid? userId,
+		CancellationToken cancellationToken = default);
+
+	Task<Booking?> GetByIdAsync(
+		Guid id,
+		Guid? userId,
+		CancellationToken cancellationToken = default);
 }

@@ -4,6 +4,7 @@ using Application.Abstractions.Persistence;
 using Application.Abstractions.Reporting;
 using Application.Abstractions.Time;
 using Infrastructure.Identity;
+using Infrastructure.Options;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Time;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure;
@@ -22,23 +24,34 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var businessTimeZoneId = configuration["Booking:TimeZone"]
-                                 ?? throw new InvalidOperationException(
-                                     "Booking time zone is not configured.");
+        // Конфігурації
+        services.AddOptions<BookingOptions>()
+            .BindConfiguration(BookingOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.AddSingleton<IBusinessTimeZone>(
-            new BusinessTimeZone(businessTimeZoneId));
-        
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<AdminOptions>()
+            .BindConfiguration(AdminOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // База даних
         var connectionString = configuration.GetConnectionString("DefaultConnection")
                                ?? throw new InvalidOperationException(
                                    "Connection string 'DefaultConnection' was not found.");
-        
+
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
             options.UseSnakeCaseNamingConvention();
         });
 
+        // Identity
         services
             .AddIdentityCore<ApplicationUser>(options =>
             {
@@ -52,66 +65,58 @@ public static class DependencyInjection
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>();
-        
-        var jwtSection = configuration.GetSection(
-            JwtOptions.SectionName);
 
-        services.Configure<JwtOptions>(jwtSection);
-
-        var jwtOptions = jwtSection.Get<JwtOptions>()
-                         ?? throw new InvalidOperationException(
-                             "JWT configuration is missing.");
-
-        if (string.IsNullOrWhiteSpace(jwtOptions.Key) ||
-            jwtOptions.Key.Length < 32)
-        {
-            throw new InvalidOperationException(
-                "JWT signing key must contain at least 32 characters.");
-        }
-
+        // Сервіси безпеки та JWT
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 
         services
             .AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme =
-                    JwtBearerDefaults.AuthenticationScheme;
-
-                options.DefaultChallengeScheme =
-                    JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(options =>
+            .AddJwtBearer();
+
+        // Зв'язування налаштувань Bearer-токена з завалідованим JwtOptions
+        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IOptions<JwtOptions>>((bearerOptions, jwtOptions) =>
             {
-                options.TokenValidationParameters =
-                    new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = jwtOptions.Issuer,
+                var jwt = jwtOptions.Value;
 
-                        ValidateAudience = true,
-                        ValidAudience = jwtOptions.Audience,
+                bearerOptions.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwt.Issuer,
 
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey =
-                            new SymmetricSecurityKey(
-                                Encoding.UTF8.GetBytes(jwtOptions.Key)),
+                    ValidateAudience = true,
+                    ValidAudience = jwt.Audience,
 
-                        ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
 
-                        ClockSkew = TimeSpan.FromSeconds(30)
-                    };
+                    ValidateLifetime = true,
+
+                    ClockSkew = TimeSpan.FromSeconds(30)
+                };
             });
 
         services.AddAuthorization();
-        
+
+        // Часові зони та доменні сервіси
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IBusinessTimeZone, BusinessTimeZone>();
+
+        // Репозиторії
         services.AddScoped<IConferenceRoomRepository, ConferenceRoomRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Фонові задачі та сидери
         services.AddHostedService<IdentitySeeder>();
-        
+
         return services;
     }
 }

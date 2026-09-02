@@ -1,5 +1,6 @@
 using Application.Abstractions.Persistence;
 using Domain.Entities;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Repositories;
@@ -83,6 +84,7 @@ internal sealed class ConferenceRoomRepository : IConferenceRoomRepository
                 .Where(room => room.Capacity >= capacity)
                 // Фільтруємо кімнати, які не мають бронювань у вказаному проміжку часу
                 .Where(room => !room.Bookings.Any(booking =>
+                        booking.Status == BookingStatus.Active &&
                         booking.StartTime < endTime &&
                         booking.EndTime > startTime))
                 .OrderBy(room => room.Capacity)

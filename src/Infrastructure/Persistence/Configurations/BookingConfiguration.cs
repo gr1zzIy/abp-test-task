@@ -23,6 +23,10 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsRequired()
             .HasPrecision(18, 2);
 
+        builder.Property(b => b.Status)
+            .IsRequired()
+            .HasConversion<int>();
+        
         builder.Property(b => b.UserId)
             .IsRequired();
         
