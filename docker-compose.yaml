@@ -10,7 +10,7 @@
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       
     ports:
-      - "5432:5432"
+      - "5435:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -30,29 +30,31 @@
     build:
       context: .
       dockerfile: Dockerfile
-
+    
     container_name: conference-booking-api
     restart: unless-stopped
-
+    
+    env_file:
+      - .env
+    
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-
+      
       ConnectionStrings__DefaultConnection: >-
         Host=postgres;
         Port=5432;
         Database=${POSTGRES_DB};
         Username=${POSTGRES_USER};
         Password=${POSTGRES_PASSWORD}
-
-      Booking__TimeZone: Europe/Kyiv
-
-      Database__ApplyMigrationsOnStartup: "true"
       
-      Jwt__Key: ${JWT_KEY}
+      Booking__TimeZone: Europe/Kyiv
+      Database__ApplyMigrationsOnStartup: "true"
+      Admin__SeedOnStartup: "true"
+    
     ports:
       - "5034:8080"
-
+    
     depends_on:
       postgres:
         condition: service_healthy

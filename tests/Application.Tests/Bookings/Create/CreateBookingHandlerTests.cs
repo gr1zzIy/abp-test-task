@@ -1,3 +1,4 @@
+using Application.Abstractions.Authentication;
 using Application.Abstractions.Persistence;
 using Application.Abstractions.Pricing;
 using Application.Abstractions.Time;
@@ -17,7 +18,8 @@ public sealed class CreateBookingHandlerTests
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IRentalPriceCalculator> _priceCalculator = new();
     private readonly Mock<IValidator<CreateBookingCommand>> _validator = new();
-
+    private readonly Mock<ICurrentUser> _currentUser = new();
+    
     private readonly CreateBookingHandler _handler;
     private readonly Mock<IBusinessTimeZone> _businessTimeZone = new();
     
@@ -29,8 +31,9 @@ public sealed class CreateBookingHandlerTests
             _unitOfWork.Object,
             _priceCalculator.Object,
             _businessTimeZone.Object,
-            _validator.Object);
-
+            _validator.Object,
+            _currentUser.Object);
+        
         _validator
             .Setup(x => x.ValidateAsync(
                 It.IsAny<CreateBookingCommand>(),
@@ -41,6 +44,14 @@ public sealed class CreateBookingHandlerTests
             .Setup(x => x.ConvertFromUtc(It.IsAny<DateTimeOffset>()))
             .Returns((DateTimeOffset utcTime) =>
                 utcTime.ToOffset(TimeSpan.FromHours(3)));
+
+        _currentUser
+            .SetupGet(x => x.IsAuthenticated)
+            .Returns(true);
+
+        _currentUser
+            .SetupGet(x => x.UserId)
+            .Returns(Guid.NewGuid());
     }
 
     [Fact]
@@ -378,6 +389,69 @@ public sealed class CreateBookingHandlerTests
                     2026, 9, 1, 14, 0, 0,
                     TimeSpan.FromHours(3))),
             Times.Once);
+    }
+    
+    [Fact]
+    public async Task HandleAsync_ValidCommand_AssignsCurrentUserToBooking()
+    {
+        var room = CreateConferenceRoom();
+        var command = CreateCommand(conferenceRoomId: room.Id);
+        var userId = Guid.NewGuid();
+        
+        SetupAvailableRoom(room, command);
+
+        _currentUser
+            .SetupGet(x => x.IsAuthenticated)
+            .Returns(true);
+
+        _currentUser
+            .SetupGet(x => x.UserId)
+            .Returns(userId);
+
+        Booking? createdBooking = null;
+
+        _bookingRepository
+            .Setup(x => x.AddAsync(
+                It.IsAny<Booking>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Booking, CancellationToken>(
+                (booking, _) => createdBooking = booking)
+            .Returns(Task.CompletedTask);
+
+        await _handler.HandleAsync(command);
+
+        Assert.NotNull(createdBooking);
+        Assert.Equal(
+            userId,
+            createdBooking.UserId);
+    }
+    
+    [Fact]
+    public async Task HandleAsync_UnauthenticatedUser_ThrowsUnauthorizedException()
+    {
+        var command = CreateCommand();
+
+        _currentUser
+            .SetupGet(x => x.IsAuthenticated)
+            .Returns(false);
+
+        _currentUser
+            .SetupGet(x => x.UserId)
+            .Returns((Guid?)null);
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            _handler.HandleAsync(command));
+
+        _bookingRepository.Verify(
+            x => x.AddAsync(
+                It.IsAny<Booking>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        _unitOfWork.Verify(
+            x => x.SaveChangesAsync(
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
     
     private static ConferenceRoom CreateConferenceRoom(

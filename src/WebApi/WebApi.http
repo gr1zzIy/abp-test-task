@@ -234,3 +234,26 @@ GET {{WebApi_HostAddress}}/api/auth/me
 Accept: application/json
 
 ###
+
+### Отримання всіх бронювань
+
+GET {{WebApi_HostAddress}}/api/bookings
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Отримання бронювання за ІД
+
+GET {{WebApi_HostAddress}}/api/bookings/{{BookingId}}
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Відміна бронювання за ІД
+
+POST {{WebApi_HostAddress}}/api/bookings/{{BookingId}}/cancel
+Authorization: Bearer {{AccessToken}}
+
+###

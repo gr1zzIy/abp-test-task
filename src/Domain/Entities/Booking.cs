@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Domain.Entities;
 
 /// <summary>
@@ -24,9 +26,19 @@ public class Booking
     /// </summary>
     public decimal TotalPrice { get; set; }
 
+    /// <summary>
+    /// Поточний стан бронювання.
+    /// </summary>
+    public BookingStatus Status { get; set; } = BookingStatus.Active;
+    
     public Guid ConferenceRoomId { get; set; }
     public ConferenceRoom ConferenceRoom { get; set; } = null!;
 
+    /// <summary>
+    /// Ідентифікатор користувача, який створив бронювання.
+    /// </summary>
+    public Guid UserId { get; set; }
+    
     /// <summary>
     /// Додаткові послуги, обрані для бронювання.
     /// </summary>

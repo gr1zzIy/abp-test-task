@@ -1,4 +1,5 @@
 using Application.Abstractions.Reporting;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Repositories;
@@ -19,7 +20,10 @@ internal sealed class ReportRepository : IReportRepository
     {
         var result = await _dbContext.Bookings
             .AsNoTracking()
-            .Where(b => b.StartTime >= from && b.StartTime < to)
+            .Where(b => 
+                b.Status == BookingStatus.Active &&
+                b.StartTime >= from && 
+                b.StartTime < to)
             .GroupBy(_ => 1)
             .Select(g => new RevenueReportData(
                 g.Count(),
@@ -36,7 +40,10 @@ internal sealed class ReportRepository : IReportRepository
     {
         return await _dbContext.Bookings
             .AsNoTracking()
-            .Where(b => b.StartTime >= from && b.StartTime < to)
+            .Where(b => 
+                b.Status == BookingStatus.Active &&
+                b.StartTime >= from && 
+                b.StartTime < to)
             .GroupBy(b => new
             {
                 b.ConferenceRoomId,
@@ -64,7 +71,10 @@ internal sealed class ReportRepository : IReportRepository
             {
                 s.Id,
                 s.Name,
-                UsageCount = s.Bookings.Count(b => b.StartTime >= from && b.StartTime < to)
+                UsageCount = s.Bookings.Count(b => 
+                    b.Status == BookingStatus.Active &&
+                    b.StartTime >= from && 
+                    b.StartTime < to)
             })
             .Where(s => s.UsageCount > 0)
             .OrderByDescending(s => s.UsageCount)

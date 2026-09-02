@@ -1,4 +1,7 @@
 using Application.Abstractions.Time;
+using Infrastructure.Options;
+using Microsoft.Extensions.Options;
+using TimeZoneConverter;
 
 namespace Infrastructure.Time;
 
@@ -6,16 +9,10 @@ internal sealed class BusinessTimeZone : IBusinessTimeZone
 {
     private readonly TimeZoneInfo _timeZone;
 
-    public BusinessTimeZone(string timeZoneId)
+    public BusinessTimeZone(IOptions<BookingOptions> options)
     {
-        if (string.IsNullOrWhiteSpace(timeZoneId))
-        {
-            throw new ArgumentException(
-                "Business time zone id must be configured.",
-                nameof(timeZoneId));
-        }
-
-        _timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var timeZoneId = options.Value.TimeZone;
+        _timeZone = TZConvert.GetTimeZoneInfo(timeZoneId);
     }
 
     public DateTimeOffset ConvertFromUtc(DateTimeOffset utcTime)
