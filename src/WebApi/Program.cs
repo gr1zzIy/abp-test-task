@@ -13,6 +13,8 @@ var app = builder.Build();
 
 await app.ApplyDatabaseMigrationsAsync();
 
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerDocumentation();
@@ -20,7 +22,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseRouting();
 
@@ -30,6 +35,7 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
+app.MapHealthCheckEndpoints();
 
 app.Run();
 
