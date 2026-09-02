@@ -1,10 +1,10 @@
 using Application.Common.Security;
 using Infrastructure.Options;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Identity;
 
@@ -15,35 +15,24 @@ namespace Infrastructure.Identity;
 internal sealed class IdentitySeeder : IHostedService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<IdentitySeeder> _logger;
+    private readonly AdminOptions _options;
 
     public IdentitySeeder(
         IServiceScopeFactory scopeFactory,
-        IConfiguration configuration,
+        IOptions<AdminOptions> options,
         ILogger<IdentitySeeder> logger)
     {
         _scopeFactory = scopeFactory;
-        _configuration = configuration;
+        _options = options.Value;
         _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var options = _configuration
-            .GetSection(AdminOptions.SectionName)
-            .Get<AdminOptions>();
-
-        if (options?.SeedOnStartup != true)
+        if (!_options.SeedOnStartup)
         {
             return;
-        }
-
-        if (string.IsNullOrWhiteSpace(options.Email) ||
-            string.IsNullOrWhiteSpace(options.Password))
-        {
-            throw new InvalidOperationException(
-                "Admin seed is enabled, but admin credentials are not configured.");
         }
 
         using var scope = _scopeFactory.CreateScope();
@@ -52,7 +41,7 @@ internal sealed class IdentitySeeder : IHostedService
             .GetRequiredService<UserManager<ApplicationUser>>();
 
         var existingUser = await userManager.FindByEmailAsync(
-            options.Email);
+            _options.Email);
 
         if (existingUser is not null)
         {
@@ -74,14 +63,14 @@ internal sealed class IdentitySeeder : IHostedService
         var user = new ApplicationUser
         {
             Id = Guid.NewGuid(),
-            UserName = options.Email,
-            Email = options.Email,
+            UserName = _options.Email,
+            Email = _options.Email,
             EmailConfirmed = true
         };
 
         var createResult = await userManager.CreateAsync(
             user,
-            options.Password);
+            _options.Password);
 
         if (!createResult.Succeeded)
         {
@@ -104,7 +93,7 @@ internal sealed class IdentitySeeder : IHostedService
 
         _logger.LogInformation(
             "Initial administrator account was created for {Email}.",
-            options.Email);
+            _options.Email);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

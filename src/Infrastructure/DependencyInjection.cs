@@ -37,7 +37,12 @@ public static class DependencyInjection
 
         services.AddOptions<AdminOptions>()
             .BindConfiguration(AdminOptions.SectionName)
-            .ValidateDataAnnotations()
+            .Validate(
+                options =>
+                    !options.SeedOnStartup ||
+                    (!string.IsNullOrWhiteSpace(options.Email) &&
+                     !string.IsNullOrWhiteSpace(options.Password)),
+                "Admin email and password must be configured when admin seeding is enabled.")
             .ValidateOnStart();
 
         // База даних
