@@ -43,9 +43,9 @@ public sealed class ConferenceBookingWebApplicationFactory
                     ["Jwt:ExpirationMinutes"] = "60",
 
                     // Значення потрібні для проходження валідації
-                    ["Admin:SeedOnStartup"] = "false",
-                    ["Admin:Email"] = "admin.test@example.com",
-                    ["Admin:Password"] = "TestPassword123!"
+                    ["Admin:SeedOnStartup"] = "true",
+                    ["Admin:Email"] = "admin@integration.test",
+                    ["Admin:Password"] = "AdminPassword123"
                 });
         });
 
