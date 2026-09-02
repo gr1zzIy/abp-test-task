@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Threading.RateLimiting;
 using Application.Abstractions.Authentication;
+using Infrastructure.Persistence;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi;
 using WebApi.Infrastructure;
 
@@ -15,14 +17,27 @@ public static class DependencyInjection
 
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
-
-        services.AddHttpContextAccessor();
-
-        services.AddScoped<ICurrentUser, CurrentUser>();
         
         AddSwagger(services);
         AddRateLimiting(services);
 
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        
+        services
+            .AddHealthChecks()
+            .AddDbContextCheck<AppDbContext>(
+                name: "database",
+                tags: new[] { "ready" });
+        
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor 
+                                       | ForwardedHeaders.XForwardedProto;
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+        
         return services;
     }
 
@@ -151,7 +166,14 @@ public static class DependencyInjection
 
     private static string GetClientIdentifier(HttpContext context)
     {
-        return context.Connection.RemoteIpAddress?.ToString()
-            ?? "unknown";
+        // Якщо користувач авторизований лімітуємо по його ID
+        var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            return $"user_{userId}";
+        }
+
+        // Для анонімних запитів лімітуємо по IP
+        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }
